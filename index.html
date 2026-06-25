@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MSC Capital - Hoàn Phí Giao Dịch Chứng Khoán</title>
+    <style>
+        :root {
+            --primary: #2e7d32; /* Xanh lá tài chính chủ đạo */
+            --primary-hover: #1b5e20;
+            --accent: #ff6d00; /* Cam điểm nhấn thương hiệu */
+            --accent-hover: #e65100;
+            --bg: #f4f6f9;
+            --card-bg: #ffffff;
+            --text-main: #2c3e50;
+            --text-muted: #7f8c8d;
+            --border: #e2e8f0;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: var(--bg); color: var(--text-main); line-height: 1.6; }
+        
+        /* Navigation */
+        nav { background: #fff; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
+        .nav-container { max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; }
+        .logo { font-size: 24px; font-weight: 800; color: var(--primary); text-decoration: none; cursor: pointer; }
+        .logo span { color: var(--accent); } /* Chữ Capital màu cam */
+        .nav-links { display: flex; gap: 15px; }
+        .nav-link { padding: 8px 16px; text-decoration: none; color: var(--text-main); font-weight: 500; border-radius: 6px; cursor: pointer; transition: 0.2s; }
+        .nav-link:hover, .nav-link.active { background: #e8f5e9; color: var(--primary); }
+
+        /* App Layout */
+        .container { max-width: 1200px; margin: 30px auto; padding: 0 20px; }
+        .page { display: none; }
+        .page.active { display: block; }
+
+        /* Typography & UI Elements (Tiêu đề màu cam) */
+        h1, h2, h3 { color: var(--accent); margin-bottom: 15px; font-weight: 700; }
+        h1 { font-size: 2.5rem; }
+        p { color: var(--text-muted); margin-bottom: 25px; }
+        .card { background: var(--card-bg); border-radius: 12px; padding: 25px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); margin-bottom: 25px; border: 1px solid var(--border); }
+        .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-top: 20px; }
+        
+        /* Buttons (Màu cam nổi bật) */
+        .action-btn { padding: 10px 20px; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: 0.2s; background: #e2e8f0; color: var(--text-main); }
+        .action-btn.primary { background: var(--accent); color: white; }
+        .action-btn.primary:hover { background: var(--accent-hover); }
+        
+        /* Forms */
+        .form-group { margin-bottom: 15px; display: flex; flex-direction: column; gap: 5px; }
+        .form-group label { font-weight: 600; font-size: 14px; color: var(--primary); }
+        input, select { padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 15px; width: 100%; max-width: 400px; }
+        input:focus, select:focus { outline: none; border-color: var(--primary); }
+        
+        /* Dynamic Elements */
+        #ref-reveal { display: none; margin-top: 15px; padding: 15px; background: #e8f5e9; border: 1px dashed var(--primary); border-radius: 6px; max-width: 400px; }
+        #ref-reveal.show { display: block; }
+        #signup-success { display: none; text-align: center; padding: 30px; }
+        #signup-success.show { display: block; }
+        
+        /* Tables */
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; background: white; border-radius: 8px; overflow: hidden; }
+        th { background: #f1f8e9; padding: 12px 1.5rem; text-align: left; font-weight: 600; font-size: 13px; color: var(--primary); border-bottom: 1px solid var(--border); }
+        tr:not(:last-child) { border-bottom: 1px solid var(--border); }
+        
+        /* Badges & Avatars */
+        .badge { padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+        .badge-done { background: #c6f6d5; color: #22543d; }
+        .badge-pending { background: #feebc8; color: #744210; }
+        .user-avatar { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 12px; }
+
+        /* Slider Section */
+        .slider-box { display: flex; align-items: center; gap: 20px; margin: 20px 0; }
+        input[type="range"] { max-width: 100%; height: 6px; background: #e2e8f0; border-radius: 3px; outline: none; accent-color: var(--primary); }
+
+        /* BLOG STYLE ADDITIONS */
+        .blog-filter-bar { display: flex; gap: 10px; margin-bottom: 25px; flex-wrap: wrap; }
+        .filter-btn { padding: 6px 14px; background: #fff; border: 1px solid var(--border); border-radius: 20px; font-size: 14px; font-weight: 500; cursor: pointer; transition: 0.2s; color: var(--text-main); }
+        .filter-btn:hover, .filter-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+        .blog-card { display: flex; flex-direction: column; justify-content: space-between; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; }
+        .blog-card:hover { transform: translateY(-4px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
+        .blog-meta { font-size: 12px; color: var(--text-muted); margin-bottom: 10px; display: flex; gap: 15px; }
+        .blog-tag { background: #e8f5e9; color: var(--primary); padding: 2px 8px; border-radius: 4px; font-weight: 600; font-size: 11px; text-transform: uppercase; display: inline-block; width: fit-content; margin-bottom: 10px; }
+        .blog-detail-content { font-size: 16px; color: #34495e; line-height: 1.8; }
+        .blog-detail-content h4 { color: var(--primary); margin: 20px 0 10px; font-size: 18px; }
+        .blog-detail-content p { color: #34495e; margin-bottom: 15px; }
+        .blog-detail-content ul { margin-left: 20px; margin-bottom: 15px; color: #34495e; }
+        .blog-detail-content ul li { margin-bottom: 5px; }
+    </style>
+</head>
+<body>
+
+    <!-- THANH ĐIỀU HƯỚNG (NAV) -->
+    <nav>
+        <div class="nav-container">
+            <a class="logo" onclick="showPage('landing')">MSC <span>Capital</span></a>
+            <div class="nav-links">
+                <a class="nav-link active" data-page="landing" onclick="showPage('landing')">Trang chủ</a>
+                <a class="nav-link" data-page="blog" onclick="showPage('blog')">Kiến thức / Blog</a>
+                <a class="nav-link" data-page="signup" onclick="showPage('signup')">Đăng ký</a>
+                <a class="nav-link" data-page="dashboard" onclick="showPage('dashboard')">Dashboard</a>
+                <a class="nav-link" data-page="brokers" onclick="showPage('brokers')">So sánh CTCK</a>
+                <a class="nav-link" data-page="admin" onclick="showPage('admin')">Admin</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        
+        <!-- 1. TRANG LANDING (TRANG CHỦ) -->
+        <div id="page-landing" class="page active">
+            <div style="text-align: center; padding: 60px 0;">
+                <h1>Hoàn Phí Chứng Khoán Số 1 Việt Nam</h1>
+                <p style="font-size: 18px; max-width: 600px; margin: 0 auto 25px;">Mỗi tháng bạn đang trả hàng triệu đồng phí giao dịch vô ích. MSC Capital hoàn lại tới 50% số tiền đó — tự động, minh bạch, trọn đời.</p>
+                <button class="action-btn primary" onclick="showPage('signup')" style="font-size: 16px; padding: 12px 30px;">Bắt đầu nhận hoàn phí ngay</button>
+            </div>
+            
+            <div class="grid-3">
+                <div class="card" style="border-top: 4px solid var(--primary);">
+                    <h3>An toàn tuyệt đối</h3>
+                    <p style="margin-top:10px;">Bạn vẫn giao dịch trực tiếp trên tài khoản của bạn tại các CTCK lớn (SSI, VPS, VNDirect...). Chúng tôi không giữ tiền của bạn.</p>
+                </div>
+                <div class="card" style="border-top: 4px solid var(--primary);">
+                    <h3>Hoàn tiền tự động</h3>
+                    <p style="margin-top:10px;">Hệ thống tự động tính toán dựa trên volume giao dịch thực tế và chuyển khoản trực tiếp vào tài khoản ngân hàng của bạn định kỳ.</p>
+                </div>
+                <div class="card" style="border-top: 4px solid var(--primary);">
+                    <h3>Tối ưu lợi nhuận</h3>
+                    <p style="margin-top:10px;">Giúp các nhà đầu tư trading tần suất cao (Day Trader) tiết kiệm hàng chục triệu đồng tiền phí môi giới mỗi tháng.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- BỔ SUNG: TRANG KIẾN THỨC / BLOG -->
+        <div id="page-blog" class="page">
+            <div id="blog-list-view">
+                <h2>Kiến Thức Đầu Tư & Vĩ Mô</h2>
+                <p>Cập nhật xu hướng thị trường, phân tích chuyên sâu các công cụ tài chính và tối ưu chi phí giao dịch.</p>
+                
+                <div class="blog-filter-bar">
+                    <button class="filter-btn active" onclick="filterBlog('all')">Tất cả bài viết</button>
+                    <button class="filter-btn" onclick="filterBlog('vimo')">Vĩ mô & Lãi suất</button>
+                    <button class="filter-btn" onclick="filterBlog('chungkhoan')">Phân tích cổ phiếu</button>
+                    <button class="filter-btn" onclick="filterBlog('chi-phi')">Tối ưu chi phí</button>
+                </div>
+
+                <div class="grid-3" id="blog-grid">
+                    <!-- Dữ liệu Blog sẽ được render tự động từ JS -->
+                </div>
+            </div>
+
+            <!-- Màn hình xem chi tiết 1 bài viết blog -->
+            <div id="blog-detail-view" style="display: none; max-width: 800px; margin: 0 auto;">
+                <button class="action-btn" onclick="backToBlogList()" style="margin-bottom: 20px;">← Quay lại danh sách</button>
+                <div class="card">
+                    <span class="blog-tag" id="detail-tag">DANH MỤC</span>
+                    <h1 id="detail-title" style="font-size: 2rem; line-height: 1.3; margin-bottom: 15px;">Tiêu đề bài viết</h1>
+                    <div class="blog-meta" style="border-bottom: 1px solid var(--border); padding-bottom: 15px; margin-bottom: 20px;">
+                        <span id="detail-date">Ngày đăng</span>
+                        <span id="detail-author">Tác giả</span>
+                    </div>
+                    <div class="blog-detail-content" id="detail-content">
+                        <!-- Nội dung chi tiết bài viết sinh bởi JS -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. TRANG ĐĂNG KÝ -->
+        <div id="page-signup" class="page">
+            <div class="card" style="max-width: 600px; margin: 0 auto;">
+                <h2>Đăng Ký Tài Khoản Mới</h2>
+                <p>Nhận mã giới thiệu để kích hoạt tính năng hoàn phí tại MSC Capital</p>
+                
+                <div id="signup-form">
+                    <div class="form-group">
+                        <label>Họ và tên *</label>
+                        <input type="text" id="sig-name" placeholder="Nguyễn Văn A">
+                    </div>
+                    <div class="form-group">
+                        <label>Số điện thoại *</label>
+                        <input type="text" id="sig-phone" placeholder="090xxxxxxx">
+                    </div>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" id="sig-email" placeholder="name@example.com">
+                    </div>
+                    <div class="form-group">
+                        <label>Chọn Công ty Chứng khoán muốn liên kết *</label>
+                        <select id="sig-broker" onchange="handleBrokerChange(this.value)">
+                            <option value="">-- Chọn CTCK --</option>
+                            <option value="ssi">SSI - CTCP Chứng khoán SSI</option>
+                            <option value="vps">VPS - CTCP Chứng khoán VPS</option>
+                            <option value="vnd">VNDirect</option>
+                            <option value="mbs">MBS - Chứng khoán Quân Đội</option>
+                            <option value="bsc">BSC - Chứng khoán BIDV</option>
+                            <option value="hcm">HSC - Chứng khoán TP.HCM</option>
+                        </select>
+                    </div>
+
+                    <div id="ref-reveal">
+                        <div style="font-weight: 700; color: var(--primary);">Mã ID người giới thiệu của bạn:</div>
+                        <div id="ref-code" style="font-size: 20px; font-weight: 800; color: #1b5e20; margin: 5px 0; letter-spacing: 1px;"></div>
+                        <div id="ref-label" style="font-size: 13px; color: #2e7d32;"></div>
+                        <div style="font-size: 12px; color: #718096; margin-top: 10px;">* Hãy nhập mã ID này vào phần "Người giới thiệu" when bạn mở tài khoản tại ứng dụng của CTCK đã chọn.</div>
+                    </div>
+
+                    <button class="action-btn primary" onclick="handleSignup()" style="margin-top: 20px; width: 100%; max-width: 400px;">Hoàn tất đăng ký</button>
+                </div>
+
+                <div id="signup-success">
+                    <div style="font-size: 48px; color: var(--primary);">✓</div>
+                    <h3 style="color: var(--primary); margin-bottom: 10px;">Đăng ký thành công!</h3>
+                    <p>Hệ thống MSC Capital đã ghi nhận thông tin của bạn. Sau khi mở tài khoản và phát sinh giao dịch, tiền hoàn phí của bạn sẽ xuất hiện tại mục Dashboard vào cuối tháng.</p>
+                    <button class="action-btn primary" onclick="showPage('dashboard')">Đi tới Dashboard</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. TRANG DASHBOARD -->
+        <div id="page-dashboard" class="page">
+            <h2>Bảng Điều Khiển Nhà Đầu Tư</h2>
+            <p>Theo dõi tổng quan số dư tích lũy và dòng tiền hoàn phí của bạn</p>
+            
+            <div class="grid-3" style="margin-bottom: 25px;">
+                <div class="card" style="border-left: 5px solid var(--primary);">
+                    <h3 style="font-size: 13px; color: var(--text-muted); font-weight:600; margin-bottom:5px;">TỔNG PHÍ ĐÃ HOÀN (LŨY KẾ)</h3>
+                    <div style="font-size: 28px; font-weight: 800; color: var(--primary);">5,430,000đ</div>
+                </div>
+                <div class="card" style="border-left: 5px solid var(--accent);">
+                    <h3 style="font-size: 13px; color: var(--text-muted); font-weight:600; margin-bottom:5px;">SỐ DƯ CHỜ HOÀN THÁNG NÀY</h3>
+                    <div style="font-size: 28px; font-weight: 800; color: var(--accent);">820,000đ</div>
+                </div>
+                <div class="card" style="border-left: 5px solid #e2e8f0;">
+                    <h3 style="font-size: 13px; color: var(--text-muted); font-weight:600; margin-bottom:5px;">TÀI KHOẢN LIÊN KẾT ACTIVE</h3>
+                    <div style="font-size: 28px; font-weight: 800; color: var(--text-main);">02 Tài khoản</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>Lịch sử nhận hoàn phí</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Kỳ hoàn phí</th>
+                            <th>Công ty CK</th>
+                            <th>Volume Giao dịch</th>
+                            <th>Tổng phí phát sinh</th>
+                            <th>Số tiền được hoàn</th>
+                            <th>Trạng thái</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Tháng 05/2026</td>
+                            <td>SSI</td>
+                            <td>1.5 Tỷ</td>
+                            <td>2,250,000đ</td>
+                            <td><strong>1,125,000đ</strong> (50%)</td>
+                            <td><span class="badge badge-done">Đã chuyển khoản</span></td>
+                        </tr>
+                        <tr>
+                            <td>Tháng 05/2026</td>
+                            <td>VPS</td>
+                            <td>2.0 Tỷ</td>
+                            <td>3,000,000đ</td>
+                            <td><strong>1,350,000đ</strong> (45%)</td>
+                            <td><span class="badge badge-done">Đã chuyển khoản</span></td>
+                        </tr>
+                        <tr>
+                            <td>Tháng 04/2026</td>
+                            <td>SSI</td>
+                            <td>3.2 Tỷ</td>
+                            <td>4,800,000đ</td>
+                            <td><strong>2,400,000đ</strong> (50%)</td>
+                            <td><span class="badge badge-done">Đã chuyển khoản</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 4. TRANG SO SÁNH CÁC CTCK -->
+        <div id="page-brokers" class="page">
+            <h2>Công Cụ Ước Tính & So Sánh Tỷ Lệ Hoàn Phí</h2>
+            <p>Kéo thanh trượt để nhập Volume giao dịch dự kiến hàng tháng của bạn để tính toán số tiền tiết kiệm được cùng MSC Capital</p>
+            
+            <div class="card">
+                <div class="slider-box">
+                    <span style="font-weight: 600; width: 180px; color: var(--primary);">Volume giao dịch/tháng:</span>
+                    <input type="range" id="vol-slider" min="1" max="100" value="10" oninput="handleVolSlider(this.value)" style="flex:1;">
+                    <span id="vol-display" style="font-size: 20px; font-weight: 700; color: var(--primary); width: 120px; text-align: right;">10 tỷ đồng</span>
+                </div>
+                <div style="background: #e8f5e9; padding: 15px; border-radius: 8px; font-size: 15px; color: var(--primary); font-weight: 500;">
+                    💡 Với mức giao dịch này, bạn có thể nhận lại lên tới <strong id="calc-result-num" style="font-size: 18px; color: var(--accent);">7,500,000đ</strong> mỗi tháng nếu chọn sàn hoàn phí cao nhất!
+                </div>
+            </div>
+
+            <div class="card" style="padding: 10px 0;">
+                <table id="broker-table">
+                    <thead>
+                        <tr>
+                            <th style="padding-left:1.5rem">Công ty chứng khoán</th>
+                            <th>Phí cơ sở chuẩn</th>
+                            <th>Tỷ lệ hoàn phí</th>
+                            <th>Số tiền bạn nhận lại/tháng</th>
+                            <th>Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody id="broker-tbody">
+                        <!-- Code JS tự động điền -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 5. TRANG ADMIN PANEL -->
+        <div id="page-admin" class="page">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <div>
+                    <h2>Hệ Thống Quản Trị Hệ Thống (Admin Panel)</h2>
+                    <p>Quản lý danh sách thành viên, đối soát dữ liệu volume giao dịch và duyệt hoàn phí</p>
+                </div>
+                <input type="text" placeholder="Tìm kiếm nhanh tên, sàn..." onkeyup="renderAdminTable(this.value)" style="max-width: 250px; height: 40px;">
+            </div>
+
+            <div class="card" style="padding: 10px 0;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="padding-left:1rem">Nhà đầu tư</th>
+                            <th>Sàn liên kết</th>
+                            <th>Volume (Tháng này)</th>
+                            <th>Số tiền cần hoàn</th>
+                            <th>Trạng thái</th>
+                            <th>Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody id="admin-tbody">
+                        <!-- Code JS tự động điền -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- LOGIC JAVASCRIPT XỬ LÝ -->
+    <script>
+        function showPage(id) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+            
+            const page = document.getElementById('page-' + id);
+            if (page) page.classList.add('active');
+            
+            const link = document.querySelector('[data-page="' + id + '"]');
+            if (link) link.classList.add('active');
+            
+            // Nếu vào trang blog, mặc định hiển thị danh sách bài viết
+            if (id === 'blog') {
+                backToBlogList();
+            }
+
+            window.scrollTo(0, 0);
+        }
+
+        const brokers = [
+            { id: 'ssi',  name: 'SSI',      color: '#c0392b', rebate: 50, fee: 0.15 },
+            { id: 'vps',  name: 'VPS',      color: '#2471a3', rebate: 45, fee: 0.15 },
+            { id: 'vnd',  name: 'VNDirect', color: '#1e8449', rebate: 40, fee: 0.15 },
+            { id: 'mbs',  name: 'MBS',      color: '#7d3c98', rebate: 40, fee: 0.15 },
+            { id: 'bsc',  name: 'BSC',      color: '#d35400', rebate: 35, fee: 0.15 },
+            { id: 'hcm',  name: 'HCM',      color: '#117a65', rebate: 35, fee: 0.15 },
+            { id: 'acbs', name: 'ACBS',     color: '#922b21', rebate: 30, fee: 0.20 },
+            { id: 'tcbs', name: 'TCBS',     color: '#1a5276', rebate: 25, fee: 0.20 },
+        ];
+
+        // --- DỮ LIỆU BLOG CHI TIẾT ---
+        const blogPosts = [
+            {
+                id: 1,
+                title: "Lãi Suất Huy Động Giảm: Tín Hiệu Thị Trường Chứng Khoán Đang Tạo Đáy?",
+                category: "vimo",
+                categoryName: "Vĩ mô & Lãi suất",
+                date: "24/06/2026",
+                author: "Đức Lộc - MSC Capital",
+                summary: "Phân tích mối tương quan lịch sử giữa xu hướng cắt giảm lãi suất tiền gửi tại các NHTM và bước chuyển dịch dòng vốn thông minh sang thị trường cổ phiếu.",
+                content: `
+                    <p>Trong bối cảnh nền kinh tế đang tìm kiếm các động lực phục hồi bền vững, diễn biến dịch chuyển của lãi suất huy động tại các ngân hàng thương mại luôn là kim chỉ nam thu hút sự chú ý của giới đầu tư đại chúng.</p>
+                    <h4>1. Mối liên hệ mật thiết giữa Lãi suất và Định giá Chứng khoán</h4>
+                    <p>Lịch sử thị trường tài chính Việt Nam đã chứng minh: Tiền gửi tiết kiệm và Chứng khoán là hai bình thông nhau của dòng vốn xã hội. Khi lãi suất huy động neo ở mức cao, dòng tiền có xu hướng phòng thủ. Ngược lại, khi mặt bằng lãi suất giảm sút, chi phí cơ hội của việc giữ tiền mặt tăng lên, thúc đẩy dòng tiền tìm kiếm các kênh tài sản có tỷ suất sinh lời hấp dẫn hơn.</p>
+                    <h4>2. Tại sao đây là tín hiệu tạo đáy dài hạn?</h4>
+                    <ul>
+                        <li><strong>Dịch chuyển dòng vốn:</strong> Các khoản tiết kiệm kỳ hạn 6 tháng - 1 năm đáo hạn sẽ không tiếp tục gia hạn mà có xu hướng chảy một phần sang thị trường cổ phiếu nhằm tối ưu lợi nhuận.</li>
+                        <li><strong>Giảm chi phí vốn doanh nghiệp:</strong> Lãi suất huy động hạ nhiệt là tiền đề bắt buộc để hạ lãi suất cho vay, giúp doanh nghiệp niêm yết tiết giảm chi phí tài chính, cải thiện biên lợi nhuận ròng trực tiếp.</li>
+                    </ul>
+                    <h4>3. Chiến lược hành động mang tính chu kỳ</h4>
+                    <p>Giai đoạn thị trường tạo đáy kèm thanh khoản thấp chính là cơ hội vàng để tích lũy các nhóm ngành nhạy cảm với lãi suất như Ngân hàng, Chứng khoán và Bất động sản thương mại. Hãy phân bổ vốn một cách kỷ luật thay vì FOMO khi thị trường bùng nổ.</p>
+                `
+            },
+            {
+                id: 2,
+                title: "Tại Sao Nói Đầu Tư Công Là Công Cụ Then Chốt Thúc Đẩy GDP Năm Nay?",
+                category: "vimo",
+                categoryName: "Vĩ mô & Lãi suất",
+                date: "15/05/2026",
+                author: "Đức Lộc - MSC Capital",
+                summary: "Khám phá tác động mang tính lan tỏa (Fiscal Multiplier) từ dòng vốn giải ngân hạ tầng trọng điểm quốc gia đối với các nhóm ngành vật liệu và xây lắp.",
+                content: `
+                    <p>Đầu tư công không chỉ đơn thuần là việc xây dựng đường sá, cầu cống, mà nó đóng vai trò là "mồi lửa" kích hoạt toàn bộ cỗ máy kinh tế vận hành trong các giai đoạn tư nhân thắt chặt chi tiêu.</p>
+                    <h4>1. Hiệu ứng số nhân vốn đầu tư (Fiscal Multiplier Effect)</h4>
+                    <p>Mỗi đồng ngân sách giải ngân vào hạ tầng giao thông lớn trọng điểm quốc gia ước tính sẽ tạo ra từ 1.5 đến 2 đồng GDP cho nền kinh tế thông qua việc kích cầu tiêu dùng trực tiếp và gián tiếp.</p>
+                    <h4>2. Những nhóm ngành hưởng lợi trực tiếp từ làn sóng hạ tầng</h4>
+                    <ul>
+                        <li><strong>Nhóm Vật liệu Xây dựng:</strong> Các doanh nghiệp Thép, Đá xây dựng, Xi măng và Nhựa đường luôn là những đơn vị ghi nhận tăng trưởng doanh thu đầu tiên khi dự án bước vào giai đoạn giải phóng mặt bằng và đổ móng.</li>
+                        <li><strong>Nhóm Thầu Xây lắp:</strong> Các đơn vị có năng lực thi công dự án lớn (như các đại dự án Sân bay Long Thành, Cao tốc Bắc - Nam) sở hữu lượng backlog khổng lồ bảo chứng cho doanh thu nhiều năm tới.</li>
+                    </ul>
+                    <h4>3. Lưu ý cốt lõi dành cho nhà đầu tư cá nhân</h4>
+                    <p>Không phải doanh nghiệp nào có thông tin trúng thầu cũng mang lại lợi nhuận tốt. Nhà đầu tư cần đặc biệt quan tâm tới biên lợi nhuận gộp thực tế của dự án và khả năng thu hồi công nợ để tránh bẫy "tăng trưởng doanh thu ảo nhưng dòng tiền âm".</p>
+                `
+            },
+            {
+                id: 3,
+                title: "Day Trader: Làm Sao Để Tiết Kiệm Hàng Chục Triệu Đồng Phí Giao Dịch Mỗi Tháng?",
+                category: "chi-phi",
+                categoryName: "Tối ưu chi phí",
+                date: "02/04/2026",
+                author: "Admin - MSC Capital",
+                summary: "Bóc tách bài toán chi phí ẩn khi lướt sóng tần suất cao và cách tận dụng nền tảng hoàn phí tự động để gia tăng tỷ suất sinh lời thực tế.",
+                content: `
+                    <p>Nhiều nhà đầu tư cá nhân trading ngắn hạn thường chỉ quan tâm đến lãi/lỗ trên mỗi deal mà quên mất một "sát thủ thầm lặng" đang bào mòn tài khoản của họ hàng ngày: Phí môi giới và thuế.</p>
+                    <h4>1. Con số thống kê giật mình của một Day Trader</h4>
+                    <p>Giả sử bạn có số vốn 500 triệu đồng và quay vòng tài khoản (Volume giao dịch) khoảng 5 tỷ đồng mỗi tháng. Với mức phí tiêu chuẩn 0.15% tại các CTCK lớn, tổng phí bạn phải trả là 7.5 triệu đồng/tháng. Một năm, bạn mất tới <strong>90 triệu đồng</strong> tiền phí — tương đương 18% tổng quy mô vốn ban đầu!</p>
+                    <h4>2. Giải pháp tối ưu hóa lợi nhuận cùng MSC Capital</h4>
+                    <p>Thay vì đổi sang các công ty chứng khoán miễn phí giao dịch nhưng chất lượng hạ tầng kém, không có margin tốt hoặc đội ngũ tư vấn không chuyên sâu, giải pháp hoàn phí từ MSC Capital giúp bạn giữ nguyên tài khoản uy tín tại các sàn lớn (SSI, VPS) nhưng:</p>
+                    <ul>
+                        <li>Nhận lại tới 40% - 50% số tiền phí đã nộp định kỳ hàng tháng.</li>
+                        <li>Tự động đối soát volume qua hệ thống Dashboard minh bạch.</li>
+                        <li>Tiền về tài khoản ngân hàng cá nhân đều đặn mỗi kỳ quyết toán.</li>
+                    </ul>
+                    <p>Hãy biến chi phí bắt buộc thành dòng tiền thụ động tái đầu tư để tối ưu hóa tối đa lãi suất kép trên hành trình trading cá nhân.</p>
+                `
+            }
+        ];
+
+        function renderBlogGrid(filteredPosts) {
+            const grid = document.getElementById('blog-grid');
+            if (filteredPosts.length === 0) {
+                grid.innerHTML = `<p style="grid-column: 1/-1; text-align: center; padding: 40px 0;">Chưa có bài viết nào trong danh mục này.</p>`;
+                return;
+            }
+            grid.innerHTML = filteredPosts.map(post => `
+                <div class="card blog-card" onclick="viewBlogDetail(${post.id})">
+                    <div>
+                        <span class="blog-tag">${post.categoryName}</span>
+                        <h3 style="font-size: 18px; margin-bottom: 10px; line-height:1.4; color: var(--text-main);">${post.title}</h3>
+                        <p style="font-size: 14px; margin-bottom: 15px; line-height: 1.5;">${post.summary}</p>
+                    </div>
+                    <div class="blog-meta">
+                        <span>📅 ${post.date}</span>
+                        <span>✍️ ${post.author}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function filterBlog(category) {
+            // Thay đổi class active cho nút bấm filter
+            document.querySelectorAll('.blog-filter-bar .filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            if (category === 'all') {
+                renderBlogGrid(blogPosts);
+            } else {
+                const filtered = blogPosts.filter(p => p.category === category);
+                renderBlogGrid(filtered);
+            }
+        }
+
+        function viewBlogDetail(id) {
+            const post = blogPosts.find(p => p.id === id);
+            if (!post) return;
+
+            document.getElementById('detail-tag').textContent = post.categoryName;
+            document.getElementById('detail-title').textContent = post.title;
+            document.getElementById('detail-date').textContent = "📅 " + post.date;
+            document.getElementById('detail-author').textContent = "✍️ " + post.author;
+            document.getElementById('detail-content').innerHTML = post.content;
+
+            document.getElementById('blog-list-view').style.display = 'none';
+            document.getElementById('blog-detail-view').style.display = 'block';
+            window.scrollTo(0, 0);
+        }
+
+        function backToBlogList() {
+            document.getElementById('blog-detail-view').style.display = 'none';
+            document.getElementById('blog-list-view').style.display = 'block';
+        }
+
+        // --- CÁC LOGIC CŨ GIỮ NGUYÊN ---
+        let refCounter = 1000 + Math.floor(Math.random() * 500);
+
+        function handleBrokerChange(val) {
+            const ref = document.getElementById('ref-reveal');
+            const code = document.getElementById('ref-code');
+            const label = document.getElementById('ref-label');
+            if (!val) { ref.classList.remove('show'); return; }
+            const b = brokers.find(x => x.id === val);
+            if (!b) return;
+            refCounter++;
+            code.textContent = 'MSC-' + b.name.toUpperCase() + '-' + refCounter;
+            label.textContent = b.name + ' · hoàn ' + b.rebate + '% phí môi giới';
+            ref.classList.add('show');
+        }
+
+        function handleSignup() {
+            const name = document.getElementById('sig-name').value.trim();
+            const phone = document.getElementById('sig-phone').value.trim();
+            const broker = document.getElementById('sig-broker').value;
+            if (!name || !phone || !broker) {
+                alert('Vui lòng điền đầy đủ họ tên, số điện thoại và chọn CTCK đối tác.');
+                return;
+            }
+            document.getElementById('signup-form').style.display = 'none';
+            document.getElementById('signup-success').classList.add('show');
+        }
+
+        function renderBrokerTable(vol) {
+            const tbody = document.getElementById('broker-tbody');
+            const sorted = [...brokers].sort((a, b) => b.rebate - a.rebate);
+            tbody.innerHTML = sorted.map(b => {
+                const fee = vol * 1000000000 * (b.fee / 100);
+                const back = fee * (b.rebate / 100);
+                const pct = Math.round(b.rebate / 50 * 100);
+                return `<tr>
+                    <td style="padding:14px 1.5rem">
+                        <div style="display:flex;align-items:center;gap:10px">
+                            <div style="width:32px;height:32px;border-radius:8px;background:${b.color};display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff">${b.name.slice(0,3)}</div>
+                            <span style="font-weight:500">${b.name}</span>
+                        </div>
+                    </td>
+                    <td style="padding:14px 1.5rem;font-size:13px">${b.fee}%</td>
+                    <td style="padding:14px 1.5rem">
+                        <div style="display:flex;align-items:center;gap:10px">
+                            <div style="width:80px;height:4px;background:#f0f0f0;border-radius:2px">
+                                <div style="width:${pct}%;height:4px;background:var(--primary);border-radius:2px"></div>
+                            </div>
+                            <span style="font-size:14px;font-weight:600;color:var(--primary)">${b.rebate}%</span>
+                        </div>
+                    </td>
+                    <td style="padding:14px 1.5rem;font-size:14px;font-weight:600">${Math.round(back).toLocaleString('vi-VN')}đ</td>
+                    <td style="padding:14px 1.5rem">
+                        <button class="action-btn primary" onclick="showPage('signup')" style="font-size:12px">Đăng ký →</button>
+                    </td>
+                </tr>`;
+            }).join('');
+        }
+
+        function handleVolSlider(val) {
+            const v = parseInt(val);
+            document.getElementById('vol-display').textContent = v + ' tỷ đồng';
+            const back = v * 1000000000 * 0.0015 * 0.5;
+            document.getElementById('calc-result-num').textContent = Math.round(back).toLocaleString('vi-VN') + 'đ';
+            renderBrokerTable(v);
+        }
+
+        const adminUsers = [
+            { name: 'Nguyễn Văn Lộc', acct: '079C123456', ctck: 'SSI', vol: '1,1 tỷ', back: '820.000đ', status: 'pending', color: '#c0392b' },
+            { name: 'Trần Thị Minh',   acct: '031C987654', ctck: 'VPS', vol: '3,2 tỷ', back: '2.160.000đ', status: 'pending', color: '#2471a3' },
+            { name: 'Lê Hoàng Nam',    acct: '048C445566', ctck: 'VND', vol: '800tr',  back: '480.000đ',   status: 'done',    color: '#1e8449' },
+            { name: 'Phạm Quốc Dũng',  acct: '001C334455', ctck: 'SSI', vol: '5,7 tỷ', back: '4.275.000đ', status: 'done',    color: '#c0392b' },
+            { name: 'Hoàng Thị Lan',   acct: '068C778899', ctck: 'MBS', vol: '420tr',  back: '252.000đ',   status: 'pending', color: '#7d3c98' },
+            { name: 'Đinh Văn Hùng',   acct: '033C112233', ctck: 'BSC', vol: '2,1 tỷ', back: '1.102.500đ', status: 'done',    color: '#d35400' },
+        ];
+
+        function renderAdminTable(filter) {
+            const tbody = document.getElementById('admin-tbody');
+            const lowerFilter = filter.toLowerCase();
+            const rows = filter 
+                ? adminUsers.filter(u => u.ctck.toLowerCase().includes(lowerFilter) || u.name.toLowerCase().includes(lowerFilter)) 
+                : adminUsers;
+                
+            tbody.innerHTML = rows.map(u => {
+                const initials = u.name.split(' ').slice(-2).map(w => w[0]).join('');
+                const badge = u.status === 'done'
+                    ? '<span class="badge badge-done">Đã hoàn</span>'
+                    : '<span class="badge badge-pending">Chờ hoàn</span>';
+                return `<tr>
+                    <td style="padding:12px 1rem">
+                        <div style="display:flex;align-items:center;gap:10px">
+                            <div class="user-avatar" style="background:${u.color}">${initials}</div>
+                            <div>
+                                <div style="font-size:13px;font-weight:500">${u.name}</div>
+                                <div style="font-size:11px;color:var(--text-muted)">${u.acct}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td style="padding:12px 1rem;font-size:13px">${u.ctck}</td>
+                    <td style="padding:12px 1rem;font-size:13px">${u.vol}</td>
+                    <td style="padding:12px 1rem;font-size:13px;font-weight:600">${u.back}</td>
+                    <td style="padding:12px 1rem">${badge}</td>
+                    <td style="padding:12px 1rem"><button class="action-btn" style="font-size:12px">Chi tiết</button></td>
+                </tr>`;
+            }).join('');
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            showPage('landing');
+            renderBrokerTable(10);
+            renderAdminTable('');
+            renderBlogGrid(blogPosts); // Khởi tạo danh sách blog
+        });
+    </script>
+</body>
+</html>
